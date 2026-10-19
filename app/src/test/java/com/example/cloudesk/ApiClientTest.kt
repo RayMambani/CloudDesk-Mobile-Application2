@@ -2,7 +2,8 @@ package com.example.cloudesk
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import com.sun.net.httpserver.HttpServer
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.*
@@ -10,51 +11,51 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.net.InetSocketAddress
+import java.util.concurrent.TimeUnit
 
 /** Runs ApiClient against a tiny local HTTP server that imitates api.php. */
 @RunWith(RobolectricTestRunner::class)
 class ApiClientTest {
-    private lateinit var server: HttpServer
+    private lateinit var server: MockWebServer
     private lateinit var context: Context
-    private var lastBody = ""
-    private var lastToken: String? = null
-    private var reply = """{"ok":true}"""
-    private var status = 200
 
-    private val url get() = "http://127.0.0.1:${server.address.port}/api.php"
+    private val url get() = server.url("/api.php").toString()
 
     @Before fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
-        server.createContext("/api.php") { ex ->
-            lastBody = ex.requestBody.readBytes().toString(Charsets.UTF_8)
-            lastToken = ex.requestHeaders.getFirst("X-Auth-Token")
-            val bytes = reply.toByteArray()
-            ex.sendResponseHeaders(status, bytes.size.toLong())
-            ex.responseBody.use { it.write(bytes) }
-        }
+        server = MockWebServer()
         server.start()
     }
 
-    @After fun tearDown() { server.stop(0); SessionManager.clearSession(context) }
+    @After fun tearDown() {
+        runCatching { server.shutdown() } // some tests shut it down themselves
+        SessionManager.clearSession(context)
+    }
+
+    private fun reply(body: String, code: Int = 200) {
+        server.enqueue(MockResponse().setResponseCode(code).setBody(body))
+    }
 
     @Test fun sendsActionAndToken() {
+        reply("""{"ok":true}""")
         SessionManager.saveToken(context, "abc123")
         val r = ApiClient.call(context, "sync", baseUrl = url)
         assertTrue(r.ok)
-        assertEquals("sync", JSONObject(lastBody).getString("action"))
-        assertEquals("abc123", lastToken)
+        val request = server.takeRequest(5, TimeUnit.SECONDS)!!
+        assertEquals("sync", JSONObject(request.body.readUtf8()).getString("action"))
+        assertEquals("abc123", request.getHeader("X-Auth-Token"))
     }
 
     @Test fun noTokenWhenNotAuthenticated() {
+        reply("""{"ok":true}""")
         SessionManager.saveToken(context, "abc123")
         ApiClient.call(context, "login", authenticated = false, baseUrl = url)
-        assertNull(lastToken)
+        val request = server.takeRequest(5, TimeUnit.SECONDS)!!
+        assertNull(request.getHeader("X-Auth-Token"))
     }
 
     @Test fun mapsServerError() {
-        reply = """{"ok":false,"error":"invalid_credentials"}"""; status = 401
+        reply("""{"ok":false,"error":"invalid_credentials"}""", 401)
         val r = ApiClient.call(context, "login", authenticated = false, baseUrl = url)
         assertFalse(r.ok)
         assertEquals("invalid_credentials", r.error)
@@ -62,17 +63,19 @@ class ApiClientTest {
     }
 
     @Test fun badJsonIsBadResponse() {
-        reply = "<html>oops</html>"
+        reply("<html>oops</html>")
         assertEquals("bad_response", ApiClient.call(context, "ping", baseUrl = url).error)
     }
 
     @Test fun networkErrorWhenServerDown() {
-        val dead = url; server.stop(0)
+        val dead = url
+        server.shutdown()
         val r = ApiClient.call(context, "ping", baseUrl = dead)
         assertTrue(r.networkError)
     }
 
-    @Test fun notConfiguredByDefault() {
-        assertEquals("not_configured", ApiClient.call(context, "ping").error)
+    @Test fun placeholderUrlCountsAsNotConfigured() {
+        assertFalse(ApiConfig.isConfigured("https://clouddesk-web-application.onrender.com/"))
+        assertTrue(ApiConfig.isConfigured())
     }
 }
