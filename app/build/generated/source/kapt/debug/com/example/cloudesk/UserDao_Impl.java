@@ -6,6 +6,7 @@ import androidx.room.EntityDeletionOrUpdateAdapter;
 import androidx.room.EntityInsertionAdapter;
 import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
+import androidx.room.SharedSQLiteStatement;
 import androidx.room.util.CursorUtil;
 import androidx.room.util.DBUtil;
 import androidx.sqlite.db.SupportSQLiteStatement;
@@ -24,6 +25,8 @@ public final class UserDao_Impl implements UserDao {
   private final EntityInsertionAdapter<UserEntity> __insertionAdapterOfUserEntity;
 
   private final EntityDeletionOrUpdateAdapter<UserEntity> __updateAdapterOfUserEntity;
+
+  private final SharedSQLiteStatement __preparedStmtOfDeleteAll;
 
   public UserDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
@@ -148,6 +151,14 @@ public final class UserDao_Impl implements UserDao {
         statement.bindLong(12, entity.getId());
       }
     };
+    this.__preparedStmtOfDeleteAll = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM users";
+        return _query;
+      }
+    };
   }
 
   @Override
@@ -176,8 +187,25 @@ public final class UserDao_Impl implements UserDao {
   }
 
   @Override
+  public void deleteAll() {
+    __db.assertNotSuspendingTransaction();
+    final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteAll.acquire();
+    try {
+      __db.beginTransaction();
+      try {
+        _stmt.executeUpdateDelete();
+        __db.setTransactionSuccessful();
+      } finally {
+        __db.endTransaction();
+      }
+    } finally {
+      __preparedStmtOfDeleteAll.release(_stmt);
+    }
+  }
+
+  @Override
   public UserEntity getUserByEmail(final String email) {
-    final String _sql = "SELECT * FROM users WHERE email = ? LIMIT 1";
+    final String _sql = "SELECT * FROM users WHERE lower(email) = lower(?) LIMIT 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
     if (email == null) {

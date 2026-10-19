@@ -10,6 +10,7 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -292,13 +293,13 @@ class MainActivity : BaseActivity() {
         val query = searchQuery.lowercase()
         val displayTickets = visibleTickets.filter { t ->
             (statusFilter == null || t.status == statusFilter) &&
-                (priorityFilter == null || t.priority == priorityFilter) &&
-                (query.isEmpty() ||
-                    t.title.lowercase().contains(query) ||
-                    t.description.lowercase().contains(query) ||
-                    t.id.lowercase().contains(query) ||
-                    (t.assignedTo ?: "").lowercase().contains(query) ||
-                    TicketVocabulary.categoryDisplay(this, t.category).lowercase().contains(query))
+                    (priorityFilter == null || t.priority == priorityFilter) &&
+                    (query.isEmpty() ||
+                            t.title.lowercase().contains(query) ||
+                            t.description.lowercase().contains(query) ||
+                            t.id.lowercase().contains(query) ||
+                            (t.assignedTo ?: "").lowercase().contains(query) ||
+                            TicketVocabulary.categoryDisplay(this, t.category).lowercase().contains(query))
         }
 
         val recyclerView = findViewById<RecyclerView>(R.id.ticketsRecyclerView)

@@ -1,7 +1,5 @@
 package com.example.cloudesk
 
-import org.json.JSONObject
-
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -17,18 +15,17 @@ import android.widget.TextView
 import android.widget.Toast
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
-import okhttp3.MediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 
 class SubmitTicketActivity : BaseActivity() {
+
+    companion object {
+        // Largest file the app will upload. Keep this at or below your server's limit.
+        // (Attachments are sent as base64, which adds roughly one third to the size.)
+        const val MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024 // 5 MB
+    }
 
     private var selectedFileUri: Uri? = null
 
@@ -78,9 +75,6 @@ class SubmitTicketActivity : BaseActivity() {
         val priorityAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, TicketVocabulary.priorityDisplayList(this))
         priorityDropdown.setAdapter(priorityAdapter)
 
-        val db = AppDatabase.getDatabase(this)
-        val ticketDao = db.ticketDao()
-
         // --- AI Priority Suggestion ---
         val aiSuggestionCard = findViewById<MaterialCardView>(R.id.aiSuggestionCard)
         val aiSuggestionText = findViewById<TextView>(R.id.aiSuggestionText)
@@ -102,9 +96,9 @@ class SubmitTicketActivity : BaseActivity() {
             aiSuggestionCard.visibility = android.view.View.VISIBLE
             val localizedPriority = TicketVocabulary.priorityDisplay(this, result.priority.label)
             aiSuggestionText.text = getString(R.string.ai_priority_suggested_format, localizedPriority, result.confidence) +
-                if (result.matchedSignals.isNotEmpty()) {
-                    getString(R.string.ai_priority_based_on_format, result.matchedSignals.take(3).joinToString(", "))
-                } else ""
+                    if (result.matchedSignals.isNotEmpty()) {
+                        getString(R.string.ai_priority_based_on_format, result.matchedSignals.take(3).joinToString(", "))
+                    } else ""
         }
 
         val aiWatcher = object : TextWatcher {
@@ -131,7 +125,7 @@ class SubmitTicketActivity : BaseActivity() {
             val priority = TicketVocabulary.priorityKeyFromDisplay(this, priorityDropdown.text.toString())
 
             if (title.isNotEmpty() && description.isNotEmpty() && category.isNotEmpty() && priority.isNotEmpty()) {
-                
+
                 submitButton.isEnabled = false
                 val fileUri = selectedFileUri
                 // Reading the file and calling the server both happen off the main thread.
@@ -189,35 +183,40 @@ class SubmitTicketActivity : BaseActivity() {
     private fun onTicketSubmitted(id: String, title: String, priority: String, fileUri: Uri?) {
         val db = AppDatabase.getDatabase(this)
         val userId = intent.getIntExtra("USER_ID", -1)
+
         // Keep opening the attachment from this phone's copy.
         if (fileUri != null) {
-            db.ticketDao().getTicketById(id)?.let { db.ticketDao().insertTicket(it.copy(attachmentUri = fileUri.toString())) }
+            db.ticketDao().getTicketById(id)?.let {
+                db.ticketDao().insertTicket(it.copy(attachmentUri = fileUri.toString()))
+            }
         }
-                val attachmentNote = if (fileUri != null) getString(R.string.toast_ticket_submitted_with_attachment) else ""
-                Toast.makeText(this@SubmitTicketActivity, getString(R.string.toast_ticket_submitted, attachmentNote), Toast.LENGTH_SHORT).show()
 
-                val submitter = db.userDao().getUserById(userId)
-                val localizedPriorityForEmail = TicketVocabulary.priorityDisplay(this, priority)
-                val confirmationBody = "Hi ${submitter?.firstName ?: ""},\n\nYour ticket $id ('$title') has been submitted " +
-                    "with $localizedPriorityForEmail priority. We'll follow up as it's worked on.\n\n— CloudDesk Support"
-                androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.ticket_submitted_dialog_title))
-                    .setMessage(getString(R.string.ticket_submitted_dialog_message))
-                    .setPositiveButton(getString(R.string.action_email_me)) { _, _ ->
-                        NotificationHelper.sendEmail(this, submitter?.email, "Ticket $id submitted", confirmationBody)
-                        finish()
-                    }
-                    .setNeutralButton(getString(R.string.action_text_me)) { _, _ ->
-                        if (submitter?.phone.isNullOrBlank()) {
-                            Toast.makeText(this, getString(R.string.toast_add_phone_first), Toast.LENGTH_SHORT).show()
-                        } else {
-                            NotificationHelper.sendSms(this, submitter?.phone, confirmationBody)
-                        }
-                        finish()
-                    }
-                    .setNegativeButton(getString(R.string.action_no_thanks)) { _, _ -> finish() }
-                    .setOnCancelListener { finish() }
-                    .show()
+        val attachmentNote = if (fileUri != null) getString(R.string.toast_ticket_submitted_with_attachment) else ""
+        Toast.makeText(this@SubmitTicketActivity, getString(R.string.toast_ticket_submitted, attachmentNote), Toast.LENGTH_SHORT).show()
+
+        val submitter = db.userDao().getUserById(userId)
+        val localizedPriorityForEmail = TicketVocabulary.priorityDisplay(this, priority)
+        val confirmationBody = "Hi ${submitter?.firstName ?: ""},\n\nYour ticket $id ('$title') has been submitted " +
+                "with $localizedPriorityForEmail priority. We'll follow up as it's worked on.\n\n— CloudDesk Support"
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(getString(R.string.ticket_submitted_dialog_title))
+            .setMessage(getString(R.string.ticket_submitted_dialog_message))
+            .setPositiveButton(getString(R.string.action_email_me)) { _, _ ->
+                NotificationHelper.sendEmail(this, submitter?.email, "Ticket $id submitted", confirmationBody)
+                finish()
+            }
+            .setNeutralButton(getString(R.string.action_text_me)) { _, _ ->
+                if (submitter?.phone.isNullOrBlank()) {
+                    Toast.makeText(this, getString(R.string.toast_add_phone_first), Toast.LENGTH_SHORT).show()
+                } else {
+                    NotificationHelper.sendSms(this, submitter?.phone, confirmationBody)
+                }
+                finish()
+            }
+            .setNegativeButton(getString(R.string.action_no_thanks)) { _, _ -> finish() }
+            .setOnCancelListener { finish() }
+            .show()
     }
 
     private fun openFilePicker() {

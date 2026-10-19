@@ -1,20 +1,20 @@
 -- Merging decision tree log ---
 provider#androidx.core.content.FileProvider
-INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:70:9-78:20
+INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:74:9-82:20
 	android:grantUriPermissions
-		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:74:13-47
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:78:13-47
 	android:authorities
 		INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:72:13-64
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:76:13-64
 	android:exported
-		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:73:13-37
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:77:13-37
 	android:name
-		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:71:13-62
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:75:13-62
 manifest
-ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:2:1-82:12
-INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:2:1-82:12
-INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:2:1-82:12
-INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:2:1-82:12
+ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:2:1-86:12
+INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:2:1-86:12
+INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:2:1-86:12
+INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:2:1-86:12
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\Rachel Mambani\.gradle\caches\transforms-3\79273ccf3ed2379c73f93d1b4e436f68\transformed\material-1.11.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Rachel Mambani\.gradle\caches\transforms-3\6b0cb260c03ae61c4621df13426a15d9\transformed\constraintlayout-2.1.4\AndroidManifest.xml:2:1-11:12
 MERGED from [androidx.biometric:biometric:1.1.0] C:\Users\Rachel Mambani\.gradle\caches\transforms-3\091354593d06930dfe8226d64800e86e\transformed\biometric-1.1.0\AndroidManifest.xml:17:1-29:12
@@ -91,8 +91,8 @@ ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\
 	android:name
 		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:7:22-76
 application
-ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:9:5-80:19
-INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:9:5-80:19
+ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:9:5-84:19
+INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:9:5-84:19
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\Rachel Mambani\.gradle\caches\transforms-3\79273ccf3ed2379c73f93d1b4e436f68\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\Rachel Mambani\.gradle\caches\transforms-3\79273ccf3ed2379c73f93d1b4e436f68\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] C:\Users\Rachel Mambani\.gradle\caches\transforms-3\6b0cb260c03ae61c4621df13426a15d9\transformed\constraintlayout-2.1.4\AndroidManifest.xml:9:5-20
@@ -195,36 +195,42 @@ ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\
 		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:52:13-37
 	android:name
 		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:51:13-45
-activity#com.example.cloudesk.PerformanceReportActivity
+activity#com.example.cloudesk.ServerInfoActivity
 ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:54:9-56:40
 	android:exported
 		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:56:13-37
 	android:name
-		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:55:13-54
-activity#com.example.cloudesk.UserManagementActivity
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:55:13-47
+activity#com.example.cloudesk.PerformanceReportActivity
 ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:58:9-60:40
 	android:exported
 		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:60:13-37
 	android:name
-		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:59:13-51
-activity#com.example.cloudesk.ForgotPasswordActivity
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:59:13-54
+activity#com.example.cloudesk.UserManagementActivity
 ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:62:9-64:40
 	android:exported
 		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:64:13-37
 	android:name
 		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:63:13-51
-activity#com.example.cloudesk.FaqActivity
+activity#com.example.cloudesk.ForgotPasswordActivity
 ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:66:9-68:40
 	android:exported
 		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:68:13-37
 	android:name
-		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:67:13-40
-meta-data#android.support.FILE_PROVIDER_PATHS
-ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:75:13-77:54
-	android:resource
-		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:77:17-51
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:67:13-51
+activity#com.example.cloudesk.FaqActivity
+ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:70:9-72:40
+	android:exported
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:72:13-37
 	android:name
-		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:76:17-67
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:71:13-40
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:79:13-81:54
+	android:resource
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:81:17-51
+	android:name
+		ADDED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml:80:17-67
 uses-sdk
 INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\Rachel Mambani\.android\studio\CloudDeskApplication\app\src\main\AndroidManifest.xml

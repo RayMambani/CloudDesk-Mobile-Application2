@@ -13,7 +13,7 @@ package com.example.cloudesk
  */
 object ApiConfig {
     const val BASE_URL = "https://clouddesk-web-application.onrender.com/"
-    const val GOOGLE_WEB_CLIENT_ID = "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+    const val GOOGLE_WEB_CLIENT_ID = "350970218855-954p280oiad65e2mltpgkhhmfgjtlefb.apps.googleusercontent.com.apps.googleusercontent.comapps.googleusercontent.com.apps.googleusercontent.com"
 
     val API_URL: String get() = BASE_URL.trimEnd('/') + "/api.php"
 
