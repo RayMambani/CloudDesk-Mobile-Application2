@@ -12,6 +12,9 @@ interface TicketHistoryDao {
     @Insert
     fun insert(entry: TicketHistoryEntity)
 
+    @Query("DELETE FROM ticket_history")
+    fun deleteAll()
+
     @Query("SELECT COUNT(*) FROM ticket_history")
     fun count(): Int
 }

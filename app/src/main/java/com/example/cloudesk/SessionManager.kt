@@ -14,6 +14,7 @@ object SessionManager {
     private const val KEY_USER_NAME = "user_name"
     private const val KEY_USER_ROLE = "user_role"
     private const val KEY_USER_EMAIL = "user_email"
+    private const val KEY_TOKEN = "api_token"
 
     private fun prefs(context: Context): SharedPreferences =
         context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -36,6 +37,13 @@ object SessionManager {
     fun getUserRole(context: Context): String = prefs(context).getString(KEY_USER_ROLE, "user") ?: "user"
 
     fun getUserEmail(context: Context): String = prefs(context).getString(KEY_USER_EMAIL, "") ?: ""
+
+    /** The login token the online backend gave us (sent with every request). */
+    fun saveToken(context: Context, token: String) {
+        prefs(context).edit().putString(KEY_TOKEN, token).apply()
+    }
+
+    fun getToken(context: Context): String? = prefs(context).getString(KEY_TOKEN, null)
 
     /** Clears the active session. Used by both Logout and Switch User. */
     fun clearSession(context: Context) {

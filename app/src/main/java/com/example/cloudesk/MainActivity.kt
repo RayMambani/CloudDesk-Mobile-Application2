@@ -70,9 +70,13 @@ class MainActivity : BaseActivity() {
         // Pull down on the list to refresh it
         val swipeRefresh = findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
         swipeRefresh.setOnRefreshListener {
-            loadTickets(userRole)
-            updateOfflineBanner()
-            swipeRefresh.isRefreshing = false
+            // Pull the latest data from the online database.
+            ServerSync.refreshAsync(this) { ok ->
+                loadTickets(userRole)
+                updateOfflineBanner()
+                swipeRefresh.isRefreshing = false
+                if (!ok) Toast.makeText(this, getString(R.string.toast_server_unreachable), Toast.LENGTH_SHORT).show()
+            }
         }
 
         requestNotificationPermissionIfNeeded()
@@ -126,7 +130,10 @@ class MainActivity : BaseActivity() {
         super.onResume()
         val userRole = intent.getStringExtra("USER_ROLE") ?: "user"
         updateOfflineBanner()
-        loadTickets(userRole)
+        loadTickets(userRole) // show what we have right away...
+        ServerSync.refreshAsync(this) { ok -> // ...then bring it up to date from the online database
+            if (ok) loadTickets(userRole)
+        }
     }
 
     private fun updateOfflineBanner() {
@@ -199,7 +206,13 @@ class MainActivity : BaseActivity() {
             .setTitle(getString(R.string.logout_dialog_title))
             .setMessage(getString(R.string.logout_dialog_message))
             .setPositiveButton(getString(R.string.action_logout)) { _, _ ->
-                SessionManager.clearSession(this)
+                // Tell the server to forget this login token (best effort), then wipe the local copy.
+                val token = SessionManager.getToken(this)
+                val appContext = applicationContext
+                if (token != null) {
+                    Thread { ApiClient.call(appContext, "logout") }.start()
+                }
+                ServerSync.clearLocal(this)
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
@@ -212,16 +225,6 @@ class MainActivity : BaseActivity() {
     private fun loadTickets(userRole: String) {
         val db = AppDatabase.getDatabase(this)
         val ticketDao = db.ticketDao()
-
-        // Seed data if database is empty (to show it works independently)
-        if (ticketDao.getAllTickets().isEmpty()) {
-            val seedTickets = listOf(
-                TicketEntity("TKT-1001", "Login Issue", "Cannot log in with Google account", "open", "high", "Auth", "2026-05-11", 1),
-                TicketEntity("TKT-1002", "Server Error on Save", "Getting 500 error when saving profile", "progress", "medium", "Backend", "2026-05-10", 1),
-                TicketEntity("TKT-1003", "UI Alignment", "Buttons are cut off on small screens", "resolved", "low", "UI", "2026-05-09", 1)
-            )
-            ticketDao.insertTickets(seedTickets)
-        }
 
         val ticketsFromDb = ticketDao.getAllTickets()
         val userId = intent.getIntExtra("USER_ID", -1)
@@ -289,13 +292,13 @@ class MainActivity : BaseActivity() {
         val query = searchQuery.lowercase()
         val displayTickets = visibleTickets.filter { t ->
             (statusFilter == null || t.status == statusFilter) &&
-                    (priorityFilter == null || t.priority == priorityFilter) &&
-                    (query.isEmpty() ||
-                            t.title.lowercase().contains(query) ||
-                            t.description.lowercase().contains(query) ||
-                            t.id.lowercase().contains(query) ||
-                            (t.assignedTo ?: "").lowercase().contains(query) ||
-                            TicketVocabulary.categoryDisplay(this, t.category).lowercase().contains(query))
+                (priorityFilter == null || t.priority == priorityFilter) &&
+                (query.isEmpty() ||
+                    t.title.lowercase().contains(query) ||
+                    t.description.lowercase().contains(query) ||
+                    t.id.lowercase().contains(query) ||
+                    (t.assignedTo ?: "").lowercase().contains(query) ||
+                    TicketVocabulary.categoryDisplay(this, t.category).lowercase().contains(query))
         }
 
         val recyclerView = findViewById<RecyclerView>(R.id.ticketsRecyclerView)

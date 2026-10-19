@@ -1,6 +1,5 @@
 package com.example.cloudesk
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
@@ -8,12 +7,9 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import com.google.android.material.textfield.TextInputEditText
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import org.json.JSONObject
 
+/** Creates an account in the ONLINE database. Self-registration always creates a normal user. */
 class RegisterActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,72 +29,55 @@ class RegisterActivity : BaseActivity() {
 
         // Populate Dropdowns
         val departments = arrayOf("Marketing", "Finance", "Operations", "HR", "Sales")
-        val departmentAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, departments)
-        departmentDropdown.setAdapter(departmentAdapter)
+        departmentDropdown.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, departments))
 
+        // Shown for familiarity, but the server ignores it: new accounts are always standard
+        // users and only an administrator can promote someone.
         val roles = arrayOf("Standard User", "Support Technician", "Administrator")
-        val roleAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
-        roleDropdown.setAdapter(roleAdapter)
+        roleDropdown.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles))
 
         securityQuestionDropdown.setAdapter(
             ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, SecurityQuestions.displayList(this))
         )
 
-        val db = AppDatabase.getDatabase(this)
-        val userDao = db.userDao()
-
         registerButton.setOnClickListener {
-            val firstName = firstNameEditText.text.toString()
-            val lastName = lastNameEditText.text.toString()
-            val email = emailEditText.text.toString()
+            val firstName = firstNameEditText.text.toString().trim()
+            val lastName = lastNameEditText.text.toString().trim()
+            val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString()
             val department = departmentDropdown.text.toString()
-            val role = when (roleDropdown.text.toString()) {
-                "Standard User" -> "user"
-                "Support Technician" -> "technician"
-                "Administrator" -> "admin"
-                else -> "user"
-            }
-
             val securityKey = SecurityQuestions.keyFromDisplay(this, securityQuestionDropdown.text.toString())
             val securityAnswer = securityAnswerEditText.text.toString()
 
-            if (firstName.isNotEmpty() && lastName.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
-                if (securityKey == null || securityAnswer.isBlank()) {
-                    Toast.makeText(this@RegisterActivity, getString(R.string.toast_security_required), Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-                // Check if user already exists
-                val existingUser = userDao.getUserByEmail(email)
-                if (existingUser != null) {
-                    Toast.makeText(this@RegisterActivity, getString(R.string.toast_user_exists), Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
+            if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this@RegisterActivity, getString(R.string.toast_fill_all_fields), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (securityKey == null || securityAnswer.isBlank()) {
+                Toast.makeText(this@RegisterActivity, getString(R.string.toast_security_required), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                val user = UserEntity(
-                    firstName = firstName,
-                    lastName = lastName,
-                    email = email,
-                    department = department,
-                    password = PasswordHasher.hash(password),
-                    role = role,
-                    securityQuestion = securityKey,
-                    securityAnswerHash = SecurityQuestions.hashAnswer(securityAnswer)
-                )
-                val id = userDao.insertUser(user)
-                if (id > 0) {
+            registerButton.isEnabled = false
+            val body = JSONObject()
+                .put("firstName", firstName)
+                .put("lastName", lastName)
+                .put("email", email)
+                .put("password", password)
+                .put("department", department.ifBlank { "General" })
+                .put("securityQuestion", securityKey)
+                .put("securityAnswer", securityAnswer)
+            ApiClient.callAsync(this, "register", body, authenticated = false) { r ->
+                registerButton.isEnabled = true
+                if (r.ok) {
                     Toast.makeText(this@RegisterActivity, getString(R.string.toast_registration_successful), Toast.LENGTH_SHORT).show()
                     finish() // Go back to login
                 } else {
-                    Toast.makeText(this@RegisterActivity, getString(R.string.toast_registration_failed), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@RegisterActivity, ApiClient.errorText(this@RegisterActivity, r), Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(this@RegisterActivity, getString(R.string.toast_fill_all_fields), Toast.LENGTH_SHORT).show()
             }
         }
 
-        backToLogin.setOnClickListener {
-            finish()
-        }
+        backToLogin.setOnClickListener { finish() }
     }
 }

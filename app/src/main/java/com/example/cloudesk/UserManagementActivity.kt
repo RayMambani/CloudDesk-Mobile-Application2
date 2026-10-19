@@ -1,5 +1,7 @@
 package com.example.cloudesk
 
+import org.json.JSONObject
+
 import android.os.Bundle
 import android.text.InputType
 import android.widget.ArrayAdapter
@@ -39,6 +41,7 @@ class UserManagementActivity : BaseActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         findViewById<Button>(R.id.addUserButton).setOnClickListener { showAddUserDialog() }
         refresh()
+        ServerSync.refreshAsync(this) { ok -> if (ok) refresh() } // latest accounts from the online database
     }
 
     private fun refresh() {
@@ -71,27 +74,39 @@ class UserManagementActivity : BaseActivity() {
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.user_action_change_role))
             .setItems(labels) { _, which ->
-                AppDatabase.getDatabase(this).userDao().updateUser(user.copy(role = UserAdapter.ROLE_KEYS[which]))
-                Toast.makeText(this, getString(R.string.toast_user_updated), Toast.LENGTH_SHORT).show()
-                refresh()
+                val body = JSONObject().put("id", user.id).put("role", UserAdapter.ROLE_KEYS[which])
+                ApiClient.callAsync(this, "admin_user_role", body) { r ->
+                    if (r.ok) {
+                        Toast.makeText(this, getString(R.string.toast_user_updated), Toast.LENGTH_SHORT).show()
+                        refresh()
+                    } else {
+                        Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
             .show()
     }
 
     private fun toggleActive(user: UserEntity) {
-        AppDatabase.getDatabase(this).userDao().updateUser(user.copy(active = !user.active))
-        Toast.makeText(this, getString(R.string.toast_user_updated), Toast.LENGTH_SHORT).show()
-        refresh()
-        if (user.active) { // it was active, so it has just been deactivated
-            val name = user.firstName
-            showNotifyDialog(
-                getString(R.string.user_deactivated_title),
-                getString(R.string.user_deactivated_message_format, "${user.firstName} ${user.lastName}"),
-                user,
-                getString(R.string.notify_deactivated_subject),
-                getString(R.string.notify_deactivated_body_format, name),
-                getString(R.string.notify_deactivated_sms_format, name)
-            )
+        val body = JSONObject().put("id", user.id).put("active", !user.active)
+        ApiClient.callAsync(this, "admin_user_active", body) { r ->
+            if (!r.ok) {
+                Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                return@callAsync
+            }
+            Toast.makeText(this, getString(R.string.toast_user_updated), Toast.LENGTH_SHORT).show()
+            refresh()
+            if (user.active) { // it was active, so it has just been deactivated (and signed out everywhere)
+                val name = user.firstName
+                showNotifyDialog(
+                    getString(R.string.user_deactivated_title),
+                    getString(R.string.user_deactivated_message_format, "${user.firstName} ${user.lastName}"),
+                    user,
+                    getString(R.string.notify_deactivated_subject),
+                    getString(R.string.notify_deactivated_body_format, name),
+                    getString(R.string.notify_deactivated_sms_format, name)
+                )
+            }
         }
     }
 
@@ -120,16 +135,22 @@ class UserManagementActivity : BaseActivity() {
     }
 
     private fun resetPassword(user: UserEntity) {
-        val temp = generateTempPassword()
-        AppDatabase.getDatabase(this).userDao().updateUser(user.copy(password = PasswordHasher.hash(temp)))
-        showNotifyDialog(
-            getString(R.string.user_temp_password_title),
-            getString(R.string.user_password_changed_message_format, "${user.firstName} ${user.lastName}", temp),
-            user,
-            getString(R.string.notify_password_subject),
-            getString(R.string.notify_password_body_format, user.firstName, temp),
-            getString(R.string.notify_password_sms_format, user.firstName, temp)
-        )
+        // The server makes the temporary password, stores only its hash, and signs the user out everywhere.
+        ApiClient.callAsync(this, "admin_user_reset", JSONObject().put("id", user.id)) { r ->
+            val temp = r.json?.optString("tempPassword", "") ?: ""
+            if (!r.ok || temp.isEmpty()) {
+                Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                return@callAsync
+            }
+            showNotifyDialog(
+                getString(R.string.user_temp_password_title),
+                getString(R.string.user_password_changed_message_format, "${user.firstName} ${user.lastName}", temp),
+                user,
+                getString(R.string.notify_password_subject),
+                getString(R.string.notify_password_body_format, user.firstName, temp),
+                getString(R.string.notify_password_sms_format, user.firstName, temp)
+            )
+        }
     }
 
     private fun showAddUserDialog() {
@@ -162,31 +183,28 @@ class UserManagementActivity : BaseActivity() {
                 val firstName = first.text.toString().trim()
                 val lastName = last.text.toString().trim()
                 val emailText = email.text.toString().trim()
-                val userDao = AppDatabase.getDatabase(this).userDao()
-                when {
-                    firstName.isEmpty() || lastName.isEmpty() || emailText.isEmpty() ->
-                        Toast.makeText(this, getString(R.string.toast_fill_all_fields), Toast.LENGTH_SHORT).show()
-                    userDao.getUserByEmail(emailText) != null ->
-                        Toast.makeText(this, getString(R.string.toast_user_exists), Toast.LENGTH_SHORT).show()
-                    else -> {
-                        val temp = generateTempPassword()
-                        userDao.insertUser(
-                            UserEntity(
-                                firstName = firstName,
-                                lastName = lastName,
-                                email = emailText,
-                                password = PasswordHasher.hash(temp),
-                                department = "General",
-                                role = UserAdapter.ROLE_KEYS[spinner.selectedItemPosition]
-                            )
-                        )
-                        refresh()
-                        AlertDialog.Builder(this)
-                            .setTitle(getString(R.string.user_temp_password_title))
-                            .setMessage(getString(R.string.user_temp_password_message_format, "$firstName $lastName", temp))
-                            .setPositiveButton(getString(R.string.action_ok), null)
-                            .show()
+                if (firstName.isEmpty() || lastName.isEmpty() || emailText.isEmpty()) {
+                    Toast.makeText(this, getString(R.string.toast_fill_all_fields), Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                val body = JSONObject()
+                    .put("firstName", firstName)
+                    .put("lastName", lastName)
+                    .put("email", emailText)
+                    .put("role", UserAdapter.ROLE_KEYS[spinner.selectedItemPosition])
+                // The server creates the account with a temporary password (only its hash is stored).
+                ApiClient.callAsync(this, "admin_user_add", body) { r ->
+                    val temp = r.json?.optString("tempPassword", "") ?: ""
+                    if (!r.ok || temp.isEmpty()) {
+                        Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                        return@callAsync
                     }
+                    refresh()
+                    AlertDialog.Builder(this)
+                        .setTitle(getString(R.string.user_temp_password_title))
+                        .setMessage(getString(R.string.user_temp_password_message_format, "$firstName $lastName", temp))
+                        .setPositiveButton(getString(R.string.action_ok), null)
+                        .show()
                 }
             }
             .setNegativeButton(getString(R.string.action_cancel), null)

@@ -1,5 +1,7 @@
 package com.example.cloudesk
 
+import org.json.JSONObject
+
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -130,30 +132,68 @@ class SubmitTicketActivity : BaseActivity() {
 
             if (title.isNotEmpty() && description.isNotEmpty() && category.isNotEmpty() && priority.isNotEmpty()) {
                 
-                val id = "TKT-" + (1000..9999).random()
-                val createdAt = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
-                
-                val ticket = TicketEntity(
-                    id = id,
-                    title = title,
-                    description = description,
-                    status = "open",
-                    priority = priority,
-                    category = category,
-                    created_at = createdAt,
-                    userId = userId,
-                    attachmentUri = selectedFileUri?.toString(),
-                    attachmentName = selectedFileUri?.let { getFileName(it) }
-                )
-                
-                ticketDao.insertTicket(ticket)
-                val submitterForLog = db.userDao().getUserById(userId)
-                TicketHistoryLogger.log(
-                    db, id,
-                    submitterForLog?.let { "${it.firstName} ${it.lastName}" } ?: "User $userId",
-                    "created"
-                )
-                val attachmentNote = if (selectedFileUri != null) getString(R.string.toast_ticket_submitted_with_attachment) else ""
+                submitButton.isEnabled = false
+                val fileUri = selectedFileUri
+                // Reading the file and calling the server both happen off the main thread.
+                Thread {
+                    var attachmentName: String? = null
+                    var attachmentBase64: String? = null
+                    var tooBig = false
+                    if (fileUri != null) {
+                        try {
+                            val bytes = contentResolver.openInputStream(fileUri)?.use { it.readBytes() }
+                            if (bytes != null) {
+                                if (bytes.size > MAX_ATTACHMENT_BYTES) {
+                                    tooBig = true
+                                } else {
+                                    attachmentName = getFileName(fileUri)
+                                    attachmentBase64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                    runOnUiThread {
+                        if (tooBig) {
+                            submitButton.isEnabled = true
+                            Toast.makeText(this@SubmitTicketActivity, getString(R.string.toast_attachment_too_large), Toast.LENGTH_LONG).show()
+                            return@runOnUiThread
+                        }
+                        val body = JSONObject()
+                            .put("title", title)
+                            .put("description", description)
+                            .put("category", category)
+                            .put("priority", priority)
+                        if (attachmentName != null && attachmentBase64 != null) {
+                            body.put("attachmentName", attachmentName).put("attachmentBase64", attachmentBase64)
+                        }
+                        ApiClient.callAsync(this@SubmitTicketActivity, "ticket_create", body) { r ->
+                            submitButton.isEnabled = true
+                            val newId = r.json?.optString("ticketId", "") ?: ""
+                            if (r.ok && newId.isNotEmpty()) {
+                                onTicketSubmitted(newId, title, priority, fileUri)
+                            } else {
+                                Toast.makeText(this@SubmitTicketActivity, ApiClient.errorText(this@SubmitTicketActivity, r), Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }.start()
+            } else {
+                Toast.makeText(this@SubmitTicketActivity, getString(R.string.toast_fill_all_fields), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /** The ticket now exists in the online database; show the confirmation and the email/SMS options. */
+    private fun onTicketSubmitted(id: String, title: String, priority: String, fileUri: Uri?) {
+        val db = AppDatabase.getDatabase(this)
+        val userId = intent.getIntExtra("USER_ID", -1)
+        // Keep opening the attachment from this phone's copy.
+        if (fileUri != null) {
+            db.ticketDao().getTicketById(id)?.let { db.ticketDao().insertTicket(it.copy(attachmentUri = fileUri.toString())) }
+        }
+                val attachmentNote = if (fileUri != null) getString(R.string.toast_ticket_submitted_with_attachment) else ""
                 Toast.makeText(this@SubmitTicketActivity, getString(R.string.toast_ticket_submitted, attachmentNote), Toast.LENGTH_SHORT).show()
 
                 val submitter = db.userDao().getUserById(userId)
@@ -178,10 +218,6 @@ class SubmitTicketActivity : BaseActivity() {
                     .setNegativeButton(getString(R.string.action_no_thanks)) { _, _ -> finish() }
                     .setOnCancelListener { finish() }
                     .show()
-            } else {
-                Toast.makeText(this@SubmitTicketActivity, getString(R.string.toast_fill_all_fields), Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 
     private fun openFilePicker() {

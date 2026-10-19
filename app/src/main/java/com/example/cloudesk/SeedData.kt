@@ -31,16 +31,16 @@ object SeedData {
         val seedHash = PasswordHasher.hash(PASSWORD)
         val seedAnswerHash = SecurityQuestions.hashAnswer(SECURITY_ANSWER)
         val users = listOf(
-            UserEntity(firstName = "Shantel", lastName = "Mshabi", email = "admin@clouddesk.com", password = seedHash, department = "IT", role = "admin", phone = "0821234567"),
-            UserEntity(firstName = "Ompha", lastName = "Khumalo", email = "omph.admin@clouddesk.com", password = seedHash, department = "IT", role = "admin", phone = "0821234568"),
+            UserEntity(firstName = "Sarah", lastName = "Naidoo", email = "admin@clouddesk.com", password = seedHash, department = "IT", role = "admin", phone = "0821234567"),
+            UserEntity(firstName = "David", lastName = "Khumalo", email = "david.admin@clouddesk.com", password = seedHash, department = "IT", role = "admin", phone = "0821234568"),
             UserEntity(firstName = "John", lastName = "Mokoena", email = "john.tech@clouddesk.com", password = seedHash, department = "IT Support", role = "technician", phone = "0731234561"),
-            UserEntity(firstName = "Lisa", lastName = "Mabatha", email = "lisa.tech@clouddesk.com", password = seedHash, department = "IT Support", role = "technician", phone = "0731234562"),
+            UserEntity(firstName = "Lisa", lastName = "Van Wyk", email = "lisa.tech@clouddesk.com", password = seedHash, department = "IT Support", role = "technician", phone = "0731234562"),
             UserEntity(firstName = "Michael", lastName = "Dlamini", email = "michael.tech@clouddesk.com", password = seedHash, department = "Network Ops", role = "technician", phone = "0731234563"),
             UserEntity(firstName = "Grace", lastName = "Mahlangu", email = "grace@company.com", password = seedHash, department = "Finance", role = "user", phone = "0611112222"),
             UserEntity(firstName = "Thabo", lastName = "Sithole", email = "thabo@company.com", password = seedHash, department = "Sales", role = "user", phone = "0611112223"),
             UserEntity(firstName = "Amanda", lastName = "Botha", email = "amanda@company.com", password = seedHash, department = "HR", role = "user"),
             UserEntity(firstName = "Sipho", lastName = "Ngcobo", email = "sipho@company.com", password = seedHash, department = "Marketing", role = "user", phone = "0611112225"),
-            UserEntity(firstName = "Emma", lastName = "Msane", email = "emma@company.com", password = seedHash, department = "Operations", role = "user"),
+            UserEntity(firstName = "Emma", lastName = "Fourie", email = "emma@company.com", password = seedHash, department = "Operations", role = "user"),
             UserEntity(firstName = "Kagiso", lastName = "Molefe", email = "kagiso@company.com", password = seedHash, department = "Legal", role = "user", phone = "0611112227"),
             UserEntity(firstName = "Zanele", lastName = "Cele", email = "zanele@company.com", password = seedHash, department = "Design", role = "user"),
         )
@@ -49,7 +49,7 @@ object SeedData {
         }
         // Index map for readability below (matches declaration order above).
         val admin1 = userIds[0]; val admin2 = userIds[1]
-        val tech1 = "John Mokoena"; val tech2 = "Lisa Mabatha"; val tech3 = "Michael Dlamini"
+        val tech1 = "John Mokoena"; val tech2 = "Lisa Van Wyk"; val tech3 = "Michael Dlamini"
         val grace = userIds[5]; val thabo = userIds[6]; val amanda = userIds[7]
         val sipho = userIds[8]; val emma = userIds[9]; val kagiso = userIds[10]; val zanele = userIds[11]
 
@@ -99,13 +99,13 @@ object SeedData {
             CommentEntity(ticketId = "TCK-1003", userId = userIds[2], userName = tech1, content = "Looking into this now — can you tell me which Outlook version you're on?", created_at = "2026-08-28 14:10"),
             CommentEntity(ticketId = "TCK-1003", userId = amanda, userName = "Amanda Botha", content = "It's the latest one from the Office 365 update this week.", created_at = "2026-08-28 14:25"),
             CommentEntity(ticketId = "TCK-1005", userId = userIds[4], userName = tech3, content = "Can you share your router model? Might be a firmware issue on your end.", created_at = "2026-08-30 11:00"),
-            CommentEntity(ticketId = "TCK-1005", userId = emma, userName = "Emma Msane", content = "It's a TP-Link Archer, bought about a year ago.", created_at = "2026-08-30 11:20"),
+            CommentEntity(ticketId = "TCK-1005", userId = emma, userName = "Emma Fourie", content = "It's a TP-Link Archer, bought about a year ago.", created_at = "2026-08-30 11:20"),
             CommentEntity(ticketId = "TCK-1006", userId = userIds[3], userName = tech2, content = "Reset the account manually on our end — please try logging in again.", created_at = "2026-08-21 10:10"),
             CommentEntity(ticketId = "TCK-1006", userId = kagiso, userName = "Kagiso Molefe", content = "That worked, thank you so much!", created_at = daysAgo(8, "10:15")),
             CommentEntity(ticketId = "TCK-1007", userId = userIds[2], userName = tech1, content = "Replaced the network cable on the printer, should be back online now.", created_at = "2026-08-19 14:25"),
             CommentEntity(ticketId = "TCK-1007", userId = zanele, userName = "Zanele Cele", content = "Confirmed, it's printing again. Thanks!", created_at = daysAgo(10, "14:30")),
             CommentEntity(ticketId = "TCK-1008", userId = userIds[4], userName = tech3, content = "Identified a failed disk on the primary server, switching over to backup now.", created_at = "2026-08-10 16:10"),
-            CommentEntity(ticketId = "TCK-1008", userId = admin1, userName = "Shantel Mshabi", content = "Please prioritise this, whole department is blocked.", created_at = "2026-08-10 16:20"),
+            CommentEntity(ticketId = "TCK-1008", userId = admin1, userName = "Sarah Naidoo", content = "Please prioritise this, whole department is blocked.", created_at = "2026-08-10 16:20"),
             CommentEntity(ticketId = "TCK-1008", userId = userIds[4], userName = tech3, content = "Failover complete, all users should have access again.", created_at = daysAgo(19, "16:45")),
             CommentEntity(ticketId = "TCK-1009", userId = userIds[3], userName = tech2, content = "Renewed the license, should reflect within a few minutes.", created_at = daysAgo(23, "09:00")),
         )

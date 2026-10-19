@@ -10,6 +10,9 @@ interface ChatMessageDao {
     @Query("SELECT * FROM chat_messages WHERE userId = :userId ORDER BY id ASC")
     fun getConversation(userId: Int): List<ChatMessageEntity>
 
+    @Query("DELETE FROM chat_messages")
+    fun deleteAll()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertMessage(message: ChatMessageEntity): Long
 }

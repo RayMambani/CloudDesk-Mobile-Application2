@@ -1,5 +1,7 @@
 package com.example.cloudesk
 
+import org.json.JSONObject
+
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -153,6 +155,15 @@ class TicketDetailActivity : BaseActivity() {
         loadHistory()
         refreshRatingCard(base)
 
+        // Bring this ticket up to date from the online database (new comments, status, history).
+        ServerSync.refreshAsync(this) { ok ->
+            if (ok) {
+                loadComments()
+                loadHistory()
+                ticketDao.getTicketById(ticketId)?.let { refreshRatingCard(it) }
+            }
+        }
+
         // ---- Canned replies (staff only) ----
         cannedRepliesButton.setOnClickListener {
             val replies = arrayOf(
@@ -195,19 +206,18 @@ class TicketDetailActivity : BaseActivity() {
         addCommentButton.setOnClickListener {
             val content = commentEditText.text.toString()
             if (content.isNotEmpty() && userId != -1) {
-                val createdAt = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
-                commentDao.insertComment(
-                    CommentEntity(
-                        ticketId = ticketId,
-                        userId = userId,
-                        userName = currentUserName,
-                        content = content,
-                        created_at = createdAt
-                    )
-                )
-                Toast.makeText(this@TicketDetailActivity, getString(R.string.toast_comment_added), Toast.LENGTH_SHORT).show()
-                commentEditText.text?.clear()
-                loadComments()
+                addCommentButton.isEnabled = false
+                val body = JSONObject().put("ticketId", ticketId).put("content", content)
+                ApiClient.callAsync(this, "comment_add", body) { r ->
+                    addCommentButton.isEnabled = true
+                    if (r.ok) {
+                        Toast.makeText(this@TicketDetailActivity, getString(R.string.toast_comment_added), Toast.LENGTH_SHORT).show()
+                        commentEditText.text?.clear()
+                        loadComments()
+                    } else {
+                        Toast.makeText(this@TicketDetailActivity, ApiClient.errorText(this@TicketDetailActivity, r), Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
 
@@ -224,24 +234,18 @@ class TicketDetailActivity : BaseActivity() {
                 technicianDropdown.text.toString().trim().ifEmpty { null }
             } else latest.assignedTo
 
-            val now = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
-            val updated = latest.copy(
-                status = newStatus,
-                assignedTo = newAssignee,
-                resolvedAt = if (newStatus == "resolved" || newStatus == "closed") (latest.resolvedAt ?: now) else null
-            )
-            ticketDao.insertTicket(updated)
-
-            // History log
-            if (latest.status != newStatus) {
-                TicketHistoryLogger.log(db, ticketId, currentUserName, "status", latest.status, newStatus)
+            updateButton.isEnabled = false
+            val body = JSONObject().put("id", ticketId).put("status", newStatus)
+            if (userRole == "admin") body.put("assignee", newAssignee ?: "") // only admins can assign
+            ApiClient.callAsync(this, "ticket_update", body) { r ->
+                updateButton.isEnabled = true
+                if (r.ok) {
+                    Toast.makeText(this, getString(R.string.toast_ticket_updated), Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                }
             }
-            if ((latest.assignedTo ?: "") != (newAssignee ?: "")) {
-                TicketHistoryLogger.log(db, ticketId, currentUserName, "assignee", latest.assignedTo, newAssignee)
-            }
-
-            Toast.makeText(this, getString(R.string.toast_ticket_updated), Toast.LENGTH_SHORT).show()
-            finish()
         }
 
         // ---- Rating (ticket owner, after resolution) ----
@@ -252,13 +256,16 @@ class TicketDetailActivity : BaseActivity() {
                 return@setOnClickListener
             }
             val comment = findViewById<TextInputEditText>(R.id.ratingCommentInput).text.toString().trim()
-            val latest = ticketDao.getTicketById(ticketId) ?: base
-            val rated = latest.copy(rating = stars, ratingComment = comment.ifEmpty { null })
-            ticketDao.insertTicket(rated)
-            TicketHistoryLogger.log(db, ticketId, currentUserName, "rating", null, stars.toString())
-            Toast.makeText(this, getString(R.string.toast_rating_saved), Toast.LENGTH_SHORT).show()
-            refreshRatingCard(rated)
-            loadHistory()
+            val body = JSONObject().put("id", ticketId).put("rating", stars).put("comment", comment)
+            ApiClient.callAsync(this, "ticket_rate", body) { r ->
+                if (r.ok) {
+                    Toast.makeText(this, getString(R.string.toast_rating_saved), Toast.LENGTH_SHORT).show()
+                    refreshRatingCard(ticketDao.getTicketById(ticketId) ?: base)
+                    loadHistory()
+                } else {
+                    Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 

@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentActivity
 object BiometricHelper {
     private const val PREFS = "cloudesk_biometric"
     private const val KEY_USER_ID = "enabled_user_id"
+    private const val KEY_DEVICE_TOKEN = "device_token"
     private const val AUTHENTICATORS =
         BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL
 
@@ -25,12 +26,19 @@ object BiometricHelper {
 
     fun isEnabledFor(context: Context, userId: Int): Boolean = getEnabledUserId(context) == userId
 
-    fun enable(context: Context, userId: Int) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putInt(KEY_USER_ID, userId).apply()
+    /** The server-issued token that lets this phone sign in with a fingerprint (no password is stored). */
+    fun getDeviceToken(context: Context): String? =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_DEVICE_TOKEN, null)
+
+    fun enable(context: Context, userId: Int, deviceToken: String? = null) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putInt(KEY_USER_ID, userId)
+            .putString(KEY_DEVICE_TOKEN, deviceToken)
+            .apply()
     }
 
     fun disable(context: Context) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_USER_ID).apply()
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_USER_ID).remove(KEY_DEVICE_TOKEN).apply()
     }
 
     fun authenticate(

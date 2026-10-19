@@ -1,5 +1,7 @@
 package com.example.cloudesk
 
+import org.json.JSONObject
+
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageButton
@@ -79,8 +81,17 @@ class SettingsActivity : BaseActivity() {
                         getString(R.string.biometric_prompt_title),
                         getString(R.string.biometric_enable_subtitle),
                         onSuccess = {
-                            BiometricHelper.enable(this, user.id)
-                            Toast.makeText(this, getString(R.string.toast_biometric_enabled), Toast.LENGTH_SHORT).show()
+                            // Ask the server for a token that lets THIS phone sign in with a fingerprint.
+                            ApiClient.callAsync(this, "device_token") { r ->
+                                val token = r.json?.optString("deviceToken", "") ?: ""
+                                if (r.ok && token.isNotEmpty()) {
+                                    BiometricHelper.enable(this, user.id, token)
+                                    Toast.makeText(this, getString(R.string.toast_biometric_enabled), Toast.LENGTH_SHORT).show()
+                                } else {
+                                    biometricSwitch.isChecked = false
+                                    Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         },
                         onFailure = { message ->
                             biometricSwitch.isChecked = false
@@ -89,7 +100,11 @@ class SettingsActivity : BaseActivity() {
                     )
                 }
             } else {
-                if (BiometricHelper.isEnabledFor(this, user.id)) BiometricHelper.disable(this)
+                if (BiometricHelper.isEnabledFor(this, user.id)) {
+                    BiometricHelper.disable(this)
+                    val appContext = applicationContext
+                    Thread { ApiClient.call(appContext, "revoke_device_tokens") }.start()
+                }
             }
         }
 
@@ -108,7 +123,11 @@ class SettingsActivity : BaseActivity() {
             if (code == currentLanguage) radioButton.isChecked = true
         }
 
-        findViewById<Button>(R.id.saveSettingsButton).setOnClickListener {
+        findViewById<Button>(R.id.onlineDataButton).setOnClickListener {
+            startActivity(android.content.Intent(this, ServerInfoActivity::class.java))
+        }
+        val saveButton = findViewById<Button>(R.id.saveSettingsButton)
+        saveButton.setOnClickListener {
             val firstName = firstNameInput.text.toString().trim()
             val lastName = lastNameInput.text.toString().trim()
             val phone = phoneInput.text.toString().trim()
@@ -121,13 +140,9 @@ class SettingsActivity : BaseActivity() {
                 return@setOnClickListener
             }
 
-            // Password change: current -> new -> confirm
-            var passwordToSave = user.password
-            if (currentPassword.isNotEmpty() || newPassword.isNotEmpty() || confirmPassword.isNotEmpty()) {
-                if (!PasswordHasher.verify(currentPassword, user.password)) {
-                    Toast.makeText(this, getString(R.string.toast_current_password_incorrect), Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
+            // Password change: current -> new -> confirm. The server checks the current password.
+            val changingPassword = currentPassword.isNotEmpty() || newPassword.isNotEmpty() || confirmPassword.isNotEmpty()
+            if (changingPassword) {
                 if (newPassword.isEmpty()) {
                     Toast.makeText(this, getString(R.string.toast_enter_new_password), Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
@@ -136,24 +151,28 @@ class SettingsActivity : BaseActivity() {
                     Toast.makeText(this, getString(R.string.toast_passwords_dont_match), Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
-                passwordToSave = PasswordHasher.hash(newPassword)
             }
 
-            val updatedUser = user.copy(
-                firstName = firstName,
-                lastName = lastName,
-                phone = phone.ifEmpty { null },
-                password = passwordToSave
-            )
-            userDao.updateUser(updatedUser)
+            val body = JSONObject()
+                .put("firstName", firstName)
+                .put("lastName", lastName)
+                .put("phone", phone)
+            if (changingPassword) body.put("currentPassword", currentPassword).put("newPassword", newPassword)
 
-            // Keep the session's display name in sync
-            SessionManager.saveSession(this, updatedUser.id, "$firstName $lastName", updatedUser.role, updatedUser.email)
+            saveButton.isEnabled = false
+            ApiClient.callAsync(this, "profile_update", body) { r ->
+                saveButton.isEnabled = true
+                if (!r.ok) {
+                    Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                    return@callAsync
+                }
+                // Keep the session's display name in sync
+                SessionManager.saveSession(this, user.id, "$firstName $lastName", user.role, user.email)
 
-            prefs.edit()
-                .putBoolean(KEY_EMAIL_NOTIF, emailSwitch.isChecked)
-                .putBoolean(KEY_SMS_NOTIF, smsSwitch.isChecked)
-                .apply()
+                prefs.edit()
+                    .putBoolean(KEY_EMAIL_NOTIF, emailSwitch.isChecked)
+                    .putBoolean(KEY_SMS_NOTIF, smsSwitch.isChecked)
+                    .apply()
 
             val selectedId = languageGroup.checkedRadioButtonId
             val selectedLanguage = buttonIdsByCode.entries.find { it.value == selectedId }?.key ?: currentLanguage
@@ -175,6 +194,7 @@ class SettingsActivity : BaseActivity() {
                 recreate()
             } else {
                 finish()
+            }
             }
         }
     }

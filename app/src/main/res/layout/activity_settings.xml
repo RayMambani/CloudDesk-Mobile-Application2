@@ -352,5 +352,15 @@
             android:backgroundTint="@color/primary"
             android:padding="14dp"/>
 
+        <Button
+            android:id="@+id/onlineDataButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/online_data_button"
+            android:textAllCaps="false"
+            android:backgroundTint="@color/primary"
+            android:padding="14dp"/>
+
     </LinearLayout>
 </ScrollView>

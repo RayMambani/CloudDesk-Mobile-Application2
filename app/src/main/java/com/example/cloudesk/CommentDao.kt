@@ -10,6 +10,9 @@ interface CommentDao {
     @Query("SELECT * FROM comments WHERE ticketId = :ticketId ORDER BY created_at ASC")
     fun getCommentsForTicket(ticketId: String): List<CommentEntity>
 
+    @Query("DELETE FROM comments")
+    fun deleteAll()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertComment(comment: CommentEntity)
 }

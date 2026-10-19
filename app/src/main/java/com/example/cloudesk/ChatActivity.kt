@@ -1,5 +1,8 @@
 package com.example.cloudesk
 
+import org.json.JSONObject
+import android.widget.Toast
+
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -65,74 +68,67 @@ class ChatActivity : BaseActivity() {
     }
 
     private fun loadConversation() {
-        val db = AppDatabase.getDatabase(this)
-        val dao = db.chatMessageDao()
+        val dao = AppDatabase.getDatabase(this).chatMessageDao()
         val existing = dao.getConversation(userId)
-
         if (existing.isEmpty()) {
-            // Greet the user the first time they open chat.
-            val greeting = ChatMessageEntity(
-                userId = userId,
-                senderName = getString(R.string.chat_support_name),
-                message = getString(R.string.chat_greeting_format, userName),
-                fromSupport = true,
-                timestamp = timeNow()
+            // First time: show a greeting. (The server records its own greeting with the first message.)
+            messages.add(
+                ChatMessageEntity(
+                    userId = userId,
+                    senderName = getString(R.string.chat_support_name),
+                    message = getString(R.string.chat_greeting_format, userName),
+                    fromSupport = true,
+                    timestamp = timeNow()
+                )
             )
-            dao.insertMessage(greeting)
-            messages.add(greeting)
         } else {
             messages.addAll(existing)
         }
         adapter.notifyDataSetChanged()
         scrollToBottom()
+
+        // Bring the conversation up to date from the online database.
+        ServerSync.refreshAsync(this) { ok ->
+            if (ok) reloadMessages()
+        }
+    }
+
+    /** Re-reads the conversation from the local copy of the online database. */
+    private fun reloadMessages() {
+        val stored = AppDatabase.getDatabase(this).chatMessageDao().getConversation(userId)
+        if (stored.isEmpty()) return
+        messages.clear()
+        messages.addAll(stored)
+        adapter.notifyDataSetChanged()
+        scrollToBottom()
     }
 
     private fun sendUserMessage(text: String) {
-        val db = AppDatabase.getDatabase(this)
-        val dao = db.chatMessageDao()
-
-        // Snapshot history BEFORE inserting the new message, for Gemini context.
-        val historyBeforeThisMessage = messages.toList()
-
-        val userMsg = ChatMessageEntity(
+        // Show the message straight away, then ask the server. Chat lives in the online
+        // database; replies come from the server: Gemini for admins and technicians only,
+        // the built-in default replies for everybody else.
+        val pending = ChatMessageEntity(
             userId = userId,
             senderName = userName,
             message = text,
             fromSupport = false,
             timestamp = timeNow()
         )
-        dao.insertMessage(userMsg)
-        messages.add(userMsg)
+        messages.add(pending)
         adapter.notifyItemInserted(messages.size - 1)
         scrollToBottom()
-
         typingIndicator.visibility = View.VISIBLE
 
-        // Network calls can't run on the main thread — ask Gemini in the
-        // background, then hop back to the main thread to update the UI/DB.
-        Thread {
-            // Gemini answers are for staff only. Regular users always get the built-in
-            // default responses (generateSupportReply) — Gemini is never called for them.
-            val role = SessionManager.getUserRole(this)
-            val aiReply = if (role == "admin" || role == "technician")
-                GeminiClient.callGeminiForReply(historyBeforeThisMessage, text)
-            else null
-            handler.post {
-                typingIndicator.visibility = View.INVISIBLE
-                val reply = aiReply ?: generateSupportReply(text)
-                val replyMsg = ChatMessageEntity(
-                    userId = userId,
-                    senderName = getString(R.string.chat_support_name),
-                    message = reply,
-                    fromSupport = true,
-                    timestamp = timeNow()
-                )
-                dao.insertMessage(replyMsg)
-                messages.add(replyMsg)
-                adapter.notifyItemInserted(messages.size - 1)
-                scrollToBottom()
+        ApiClient.callAsync(this, "chat_send", JSONObject().put("message", text)) { r ->
+            typingIndicator.visibility = View.INVISIBLE
+            if (r.ok) {
+                reloadMessages()
+            } else {
+                messages.remove(pending)
+                adapter.notifyDataSetChanged()
+                Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
             }
-        }.start()
+        }
     }
 
     // NOTE: keyword detection here deliberately checks English words regardless of

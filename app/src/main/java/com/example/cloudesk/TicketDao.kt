@@ -13,6 +13,9 @@ interface TicketDao {
     @Query("SELECT * FROM tickets WHERE id = :id LIMIT 1")
     fun getTicketById(id: String): TicketEntity?
 
+    @Query("DELETE FROM tickets")
+    fun deleteAll()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertTickets(tickets: List<TicketEntity>)
 
