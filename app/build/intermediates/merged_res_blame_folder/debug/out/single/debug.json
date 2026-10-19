@@ -1,110 +1,98 @@
 [
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\drawable_ic_logo.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\drawable\\ic_logo.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_item_user.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/item_user.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_item_chat_received.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\item_chat_received.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/xml_file_paths.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/xml/file_paths.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_chat.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_chat.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/drawable_badge_bg.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/drawable/badge_bg.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\drawable_ic_cloud.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\drawable\\ic_cloud.xml"
-    },
-    {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_submit_ticket.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_submit_ticket.xml"
-    },
-    {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\menu_menu_profile.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\menu\\menu_profile.xml"
-    },
-    {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_item_ticket.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\item_ticket.xml"
-    },
-    {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_performance_report.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_performance_report.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_item_chat_received.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/item_chat_received.xml"
     },
     {
         "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_settings.xml.flat",
         "source": "com.example.cloudesk.app-main-6:/layout/activity_settings.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_user_management.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_user_management.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_forgot_password.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_forgot_password.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_faq.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_faq.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/drawable_dashed_border.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/drawable/dashed_border.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\drawable_input_bg.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\drawable\\input_bg.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_item_chat_sent.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/item_chat_sent.xml"
+    },
+    {
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_ticket_detail.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_ticket_detail.xml"
+    },
+    {
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_chat.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_chat.xml"
+    },
+    {
+        "merged": "com.example.cloudesk.app-merged_res-4:/drawable_input_bg.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/drawable/input_bg.xml"
     },
     {
         "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_login.xml.flat",
         "source": "com.example.cloudesk.app-main-6:/layout/activity_login.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\drawable_badge_bg.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\drawable\\badge_bg.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_submit_ticket.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_submit_ticket.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\drawable_dashed_border.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\drawable\\dashed_border.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_user_management.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_user_management.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_forgot_password.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_forgot_password.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/drawable_ic_cloud.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/drawable/ic_cloud.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_item_chat_sent.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\item_chat_sent.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_faq.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_faq.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_analytics.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_analytics.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/drawable_ic_logo.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/drawable/ic_logo.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_item_user.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\item_user.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_register.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_register.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_login.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_login.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/menu_menu_profile.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/menu/menu_profile.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_register.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_register.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_item_ticket.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/item_ticket.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_main.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_main.xml"
-    },
-    {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_ticket_detail.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_ticket_detail.xml"
-    },
-    {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\xml_file_paths.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\xml\\file_paths.xml"
-    },
-    {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_activity_settings.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\activity_settings.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_analytics.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_analytics.xml"
     },
     {
         "merged": "com.example.cloudesk.app-merged_res-4:/layout_item_comment.xml.flat",
         "source": "com.example.cloudesk.app-main-6:/layout/item_comment.xml"
     },
     {
-        "merged": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-merged_res-4:\\layout_item_comment.xml.flat",
-        "source": "C:\\Users\\Rachel Mambani\\.gradle\\daemon\\8.5\\com.example.cloudesk.app-main-6:\\layout\\item_comment.xml"
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_performance_report.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_performance_report.xml"
+    },
+    {
+        "merged": "com.example.cloudesk.app-merged_res-4:/layout_activity_main.xml.flat",
+        "source": "com.example.cloudesk.app-main-6:/layout/activity_main.xml"
     }
 ]
