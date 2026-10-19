@@ -122,3 +122,8 @@ app/src/test/                             automated unit tests
 - Never commit your Gemini API key. A key inside an app can be extracted from the APK; for a
   public release, route Gemini calls through your own server.
 - Admin password resets send the new password by email/SMS; users are told to change it in Settings.
+
+## YouTube Video Link
+https://youtu.be/Isd19GgFsuU?si=Ym-hSLwuuD2-HpBq
+
+
