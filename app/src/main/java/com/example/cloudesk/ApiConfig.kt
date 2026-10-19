@@ -13,10 +13,10 @@ package com.example.cloudesk
  */
 object ApiConfig {
     const val BASE_URL = "https://clouddesk-web-application.onrender.com/"
-    const val GOOGLE_WEB_CLIENT_ID = "350970218855-954p280oiad65e2mltpgkhhmfgjtlefb.apps.googleusercontent.com.apps.googleusercontent.comapps.googleusercontent.com.apps.googleusercontent.com"
+    const val GOOGLE_WEB_CLIENT_ID = "350970218855-j2m3i3t22u40nr1isrlfmapde2g3om7v.apps.googleusercontent.com.apps.googleusercontent.com.apps.googleusercontent.comapps.googleusercontent.com.apps.googleusercontent.com"
 
     val API_URL: String get() = BASE_URL.trimEnd('/') + "/api.php"
 
     fun isConfigured(): Boolean = !BASE_URL.contains("YOUR-SERVICE")
-    fun isGoogleConfigured(): Boolean = !GOOGLE_WEB_CLIENT_ID.startsWith("YOUR_WEB_CLIENT_ID")
+    fun isGoogleConfigured(): Boolean = !GOOGLE_WEB_CLIENT_ID.startsWith("350970218855-j2m3i3t22u40nr1isrlfmapde2g3om7v.apps.googleusercontent.com")
 }
