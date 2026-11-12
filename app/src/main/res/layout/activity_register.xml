@@ -145,25 +145,6 @@
                         android:inputType="none"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Account Type Dropdown -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/register_account_type_hint"
-                    android:textColorHint="@color/text_muted"
-                    app:hintTextColor="@color/primary"
-                    app:boxStrokeColor="@color/primary"
-                    app:boxBackgroundColor="@color/bg_surface"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_marginBottom="16dp">
-                    <AutoCompleteTextView
-                        android:id="@+id/roleDropdown"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/text_main"
-                        android:inputType="none"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
                 <!-- Security question (used by "Forgot password") -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"

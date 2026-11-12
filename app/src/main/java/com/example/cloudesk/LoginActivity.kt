@@ -99,7 +99,12 @@ class LoginActivity : BaseActivity() {
             ApiClient.callAsync(this, "login", body, authenticated = false) { r ->
                 loginButton.isEnabled = true
                 if (r.ok) finishSignIn(r)
-                else Toast.makeText(this@LoginActivity, ApiClient.errorText(this@LoginActivity, r), Toast.LENGTH_SHORT).show()
+                else if (r.error == "email_not_verified") {
+                    // Right password, but the email was never confirmed: ask for a fresh code.
+                    ApiClient.callAsync(this, "resend_code", JSONObject().put("email", email).put("purpose", "verify"), authenticated = false) { rr ->
+                        EmailCodeDialog.show(this@LoginActivity, email, rr.json?.optString("demoCode"))
+                    }
+                } else Toast.makeText(this@LoginActivity, ApiClient.errorText(this@LoginActivity, r), Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -120,7 +120,12 @@ object ApiClient {
             r.error == "invalid_credentials" -> R.string.toast_invalid_credentials
             r.error == "deactivated" -> R.string.toast_account_deactivated
             r.error == "exists" -> R.string.toast_user_exists
-            r.error == "weak_password" -> R.string.toast_password_too_short
+            r.error == "weak_password" -> R.string.toast_password_weak
+            r.error == "email_not_verified" -> R.string.toast_email_not_verified
+            r.error == "invalid_code" -> R.string.toast_code_invalid
+            r.error == "code_expired" -> R.string.toast_code_expired
+            r.error == "code_locked" -> R.string.toast_code_locked
+            r.error == "domain_not_allowed" -> R.string.toast_domain_not_allowed
             r.error == "throttled" -> R.string.toast_too_many_attempts
             r.error == "wrong_answer" -> R.string.toast_wrong_security_answer
             r.error == "wrong_current_password" -> R.string.toast_current_password_incorrect

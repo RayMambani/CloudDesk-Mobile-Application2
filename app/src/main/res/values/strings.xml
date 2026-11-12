@@ -341,4 +341,20 @@
     <string name="online_data_auth_lockout_format">Protection: %1$s</string>
     <string name="online_data_auth_google_on">Google sign-in: verified by the server</string>
     <string name="online_data_auth_google_off">Google sign-in: not configured on the server</string>
+    <string name="toast_password_weak">Password needs at least 8 characters with an upper-case letter, a lower-case letter and a number, and must not be a common password.</string>
+    <string name="toast_email_not_verified">Please verify your email address first.</string>
+    <string name="toast_email_verified">Email verified. You can now sign in.</string>
+    <string name="toast_code_invalid">That code is not correct.</string>
+    <string name="toast_code_expired">That code has expired. Request a new one.</string>
+    <string name="toast_code_locked">Too many wrong attempts. Request a new code.</string>
+    <string name="toast_domain_not_allowed">Registration is only open to approved email domains.</string>
+    <string name="verify_title">Verify your email</string>
+    <string name="verify_message_format">We sent a 6-digit code to %1$s. It expires in 15 minutes.</string>
+    <string name="verify_demo_format">Demo code: %1$s</string>
+    <string name="verify_code_hint">6-digit code</string>
+    <string name="verify_button">Verify</string>
+    <string name="verify_resend">Send a new code</string>
+    <string name="verify_resent">If the account exists, a new code was sent. Older codes no longer work.</string>
+    <string name="forgot_code_sent">If that email belongs to an account, a 6-digit code was sent to it.</string>
+    <string name="forgot_subtitle_code">Enter your email. We will send you a 6-digit code.</string>
 </resources>

@@ -11,10 +11,9 @@ import com.google.android.material.textfield.TextInputEditText
 import org.json.JSONObject
 
 /**
- * Password reset without email: the user answers the security question they chose at
- * registration, then sets a new password. The answer is checked by the ONLINE backend.
- * Accounts with no question are told to ask an administrator, who can reset the password
- * from User Management.
+ * Password reset by emailed code: the user enters their email, the ONLINE backend emails a
+ * 6-digit code (15 minutes, single use, 5 tries), then the user enters the code and a new
+ * password. The old password and every old login token stop working.
  */
 class ForgotPasswordActivity : BaseActivity() {
 
@@ -30,6 +29,11 @@ class ForgotPasswordActivity : BaseActivity() {
         val answerInput = findViewById<TextInputEditText>(R.id.answerInput)
         val newPasswordInput = findViewById<TextInputEditText>(R.id.resetNewPasswordInput)
         val confirmPasswordInput = findViewById<TextInputEditText>(R.id.resetConfirmPasswordInput)
+        // The "answer" box is reused for the 6-digit code.
+        answerInput.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+        answerInput.filters = arrayOf(android.text.InputFilter.LengthFilter(6))
+        (answerInput.parent.parent as? com.google.android.material.textfield.TextInputLayout)?.hint = getString(R.string.verify_code_hint)
+        findViewById<TextView>(R.id.forgotSubtitle)?.text = getString(R.string.forgot_subtitle_code)
 
         findViewById<ImageButton>(R.id.backButton).setOnClickListener { finish() }
 
@@ -41,12 +45,14 @@ class ForgotPasswordActivity : BaseActivity() {
                 return@setOnClickListener
             }
             findButton.isEnabled = false
-            ApiClient.callAsync(this, "forgot_question", JSONObject().put("email", email), authenticated = false) { r ->
+            ApiClient.callAsync(this, "forgot_request", JSONObject().put("email", email), authenticated = false) { r ->
                 findButton.isEnabled = true
-                val question = r.json?.optString("question", "") ?: ""
-                if (r.ok && question.isNotEmpty()) {
+                if (r.ok) {
                     foundEmail = email
-                    questionText.text = SecurityQuestions.display(this, question)
+                    var msg = getString(R.string.forgot_code_sent)
+                    val demo = r.json?.optString("demoCode", "") ?: ""
+                    if (demo.isNotEmpty()) msg += "  " + getString(R.string.verify_demo_format, demo)
+                    questionText.text = msg
                     resetSection.visibility = View.VISIBLE
                 } else {
                     foundEmail = null
@@ -72,8 +78,8 @@ class ForgotPasswordActivity : BaseActivity() {
                 return@setOnClickListener
             }
             resetButton.isEnabled = false
-            val body = JSONObject().put("email", email).put("answer", answer).put("newPassword", newPassword)
-            ApiClient.callAsync(this, "forgot_reset", body, authenticated = false) { r ->
+            val body = JSONObject().put("email", email).put("code", answer.trim()).put("newPassword", newPassword)
+            ApiClient.callAsync(this, "forgot_confirm", body, authenticated = false) { r ->
                 resetButton.isEnabled = true
                 if (r.ok) {
                     Toast.makeText(this, getString(R.string.toast_password_reset_done), Toast.LENGTH_LONG).show()

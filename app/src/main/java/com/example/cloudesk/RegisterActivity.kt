@@ -21,20 +21,18 @@ class RegisterActivity : BaseActivity() {
         val emailEditText = findViewById<TextInputEditText>(R.id.email)
         val passwordEditText = findViewById<TextInputEditText>(R.id.password)
         val departmentDropdown = findViewById<AutoCompleteTextView>(R.id.departmentDropdown)
-        val roleDropdown = findViewById<AutoCompleteTextView>(R.id.roleDropdown)
         val securityQuestionDropdown = findViewById<AutoCompleteTextView>(R.id.securityQuestionDropdown)
         val securityAnswerEditText = findViewById<TextInputEditText>(R.id.securityAnswerInput)
         val registerButton = findViewById<Button>(R.id.registerButton)
         val backToLogin = findViewById<TextView>(R.id.backToLogin)
 
         // Populate Dropdowns
-        val departments = arrayOf("Marketing", "Finance", "Operations", "HR", "Sales")
+        // Same approved list as the website/server; anything else is stored as "General".
+        val departments = arrayOf("General", "IT", "IT Support", "Network Ops", "Finance", "Sales", "HR", "Marketing", "Operations", "Legal", "Design")
         departmentDropdown.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, departments))
 
-        // Shown for familiarity, but the server ignores it: new accounts are always standard
-        // users and only an administrator can promote someone.
-        val roles = arrayOf("Standard User", "Support Technician", "Administrator")
-        roleDropdown.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles))
+        // There is no role choice: every new account is a standard user, and only an
+        // administrator can change a role later (enforced by the server).
 
         securityQuestionDropdown.setAdapter(
             ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, SecurityQuestions.displayList(this))
@@ -70,8 +68,8 @@ class RegisterActivity : BaseActivity() {
             ApiClient.callAsync(this, "register", body, authenticated = false) { r ->
                 registerButton.isEnabled = true
                 if (r.ok) {
-                    Toast.makeText(this@RegisterActivity, getString(R.string.toast_registration_successful), Toast.LENGTH_SHORT).show()
-                    finish() // Go back to login
+                    // The account is locked until the emailed code is entered.
+                    EmailCodeDialog.show(this@RegisterActivity, email, r.json?.optString("demoCode")) { finish() }
                 } else {
                     Toast.makeText(this@RegisterActivity, ApiClient.errorText(this@RegisterActivity, r), Toast.LENGTH_SHORT).show()
                 }
