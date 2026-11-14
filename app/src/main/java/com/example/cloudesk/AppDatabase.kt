@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [TicketEntity::class, UserEntity::class, CommentEntity::class, ChatMessageEntity::class, TicketHistoryEntity::class], version = 8)
+@Database(entities = [TicketEntity::class, UserEntity::class, CommentEntity::class, ChatMessageEntity::class, TicketHistoryEntity::class], version = 9)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ticketDao(): TicketDao
     abstract fun userDao(): UserDao

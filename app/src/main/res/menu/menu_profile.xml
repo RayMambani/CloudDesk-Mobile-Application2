@@ -16,6 +16,18 @@
         android:id="@+id/menu_users"
         android:title="@string/nav_users" />
     <item
+        android:id="@+id/menu_bulk"
+        android:title="@string/nav_bulk" />
+    <item
+        android:id="@+id/menu_autoassign"
+        android:title="@string/nav_autoassign" />
+    <item
+        android:id="@+id/menu_deleted"
+        android:title="@string/nav_deleted" />
+    <item
+        android:id="@+id/menu_audit"
+        android:title="@string/nav_audit" />
+    <item
         android:id="@+id/menu_settings"
         android:title="@string/nav_settings" />
     <item

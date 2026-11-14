@@ -24,6 +24,10 @@ object TicketHistoryLogger {
         "assignee" -> if (e.newValue.isNullOrBlank()) context.getString(R.string.history_unassigned)
                       else context.getString(R.string.history_assigned_format, e.newValue)
         "rating" -> context.getString(R.string.history_rated_format, e.newValue ?: "")
+        "reopened" -> context.getString(R.string.history_reopened_format, e.newValue ?: "")
+        "confirmed" -> context.getString(R.string.history_confirmed)
+        "restored" -> context.getString(R.string.history_restored)
+        "bulk_resolved" -> context.getString(R.string.history_bulk_format, e.newValue ?: "")
         else -> e.field
     }
 }

@@ -68,6 +68,14 @@
             android:exported="false" />
 
         <activity
+            android:name=".ChangePasswordActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AdminLogActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".FaqActivity"
             android:exported="false" />
 

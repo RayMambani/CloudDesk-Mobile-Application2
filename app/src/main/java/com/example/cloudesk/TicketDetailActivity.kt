@@ -9,6 +9,8 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.EditText
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.RatingBar
 import android.widget.TextView
@@ -28,6 +30,7 @@ class TicketDetailActivity : BaseActivity() {
     private var ticketId: String = ""
     private var userId: Int = -1
     private var userRole: String = "user"
+    private lateinit var fixBox: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,6 +154,12 @@ class TicketDetailActivity : BaseActivity() {
             }
         }
 
+        // Owner confirmation / reopen / admin delete live in a box just above the rating card.
+        val ratingCardView = findViewById<MaterialCardView>(R.id.ratingCard)
+        val host = ratingCardView.parent as ViewGroup
+        fixBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        host.addView(fixBox, host.indexOfChild(ratingCardView))
+
         loadComments()
         loadHistory()
         refreshRatingCard(base)
@@ -271,6 +280,7 @@ class TicketDetailActivity : BaseActivity() {
 
     /** Shows the rating form to the ticket owner once resolved; shows the result to everyone after. */
     private fun refreshRatingCard(ticket: TicketEntity) {
+        refreshFixBox(ticket)
         val card = findViewById<MaterialCardView>(R.id.ratingCard)
         val summary = findViewById<TextView>(R.id.ratingSummaryText)
         val inputSection = findViewById<LinearLayout>(R.id.ratingInputSection)
@@ -291,6 +301,110 @@ class TicketDetailActivity : BaseActivity() {
             }
             else -> card.visibility = View.GONE
         }
+    }
+
+    /**
+     * "Is it really fixed?": once a ticket is resolved, only its owner can confirm the fix or reopen it,
+     * so an administrator can tell which resolved tickets are truly solved. Admins can also delete
+     * (with a reason) - the ticket moves to Deleted tickets and can be restored.
+     */
+    private fun refreshFixBox(ticket: TicketEntity) {
+        fixBox.removeAllViews()
+        val pad = (12 * resources.displayMetrics.density).toInt()
+        fun text(s: String, bold: Boolean = false) = TextView(this).apply {
+            this.text = s
+            setTextColor(getColor(R.color.text_main))
+            if (bold) setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(0, 0, 0, pad / 2)
+            fixBox.addView(this)
+        }
+        val finished = ticket.status == "resolved" || ticket.status == "closed"
+        val isOwner = userRole == "user" && userId == ticket.userId
+        val staff = userRole == "admin" || userRole == "technician"
+
+        if (finished && ticket.confirmedAt == null) {
+            if (isOwner) {
+                text(getString(R.string.fixed_title), true)
+                text(getString(R.string.fixed_message))
+                fixBox.addView(Button(this).apply {
+                    this.text = getString(R.string.fixed_yes)
+                    setOnClickListener {
+                        isEnabled = false
+                        ApiClient.callAsync(this@TicketDetailActivity, "ticket_confirm", JSONObject().put("id", ticketId)) { r ->
+                            if (r.ok) {
+                                Toast.makeText(this@TicketDetailActivity, getString(R.string.toast_confirmed), Toast.LENGTH_SHORT).show()
+                                recreate()
+                            } else {
+                                isEnabled = true
+                                Toast.makeText(this@TicketDetailActivity, ApiClient.errorText(this@TicketDetailActivity, r), Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                })
+                fixBox.addView(Button(this).apply {
+                    this.text = getString(R.string.fixed_no)
+                    setOnClickListener { askReopenReason() }
+                })
+            } else if (staff) {
+                text(getString(R.string.fixed_waiting))
+            }
+        } else if (ticket.confirmedAt != null) {
+            text(getString(R.string.fixed_confirmed))
+        }
+        if (staff && ticket.reopenCount > 0) text(getString(R.string.fixed_reopened_format, ticket.reopenCount))
+
+        if (userRole == "admin") {
+            fixBox.addView(Button(this).apply {
+                this.text = getString(R.string.delete_ticket)
+                setTextColor(getColor(R.color.danger))
+                setOnClickListener { askDeleteReason() }
+            })
+        }
+        fixBox.setPadding(0, 0, 0, if (fixBox.childCount > 0) pad * 2 else 0)
+    }
+
+    private fun askReopenReason() {
+        val input = EditText(this).apply { hint = getString(R.string.fixed_reopen_hint); maxLines = 4 }
+        val pad = (16 * resources.displayMetrics.density).toInt()
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.fixed_reopen_title))
+            .setView(LinearLayout(this).apply { setPadding(pad, pad / 2, pad, 0); addView(input, LinearLayout.LayoutParams(-1, -2)) })
+            .setPositiveButton(getString(R.string.fixed_no)) { _, _ ->
+                val reason = input.text.toString().trim()
+                if (reason.isEmpty()) {
+                    Toast.makeText(this, getString(R.string.toast_fill_all_fields), Toast.LENGTH_SHORT).show(); return@setPositiveButton
+                }
+                ApiClient.callAsync(this, "ticket_reopen", JSONObject().put("id", ticketId).put("reason", reason)) { r ->
+                    if (r.ok) {
+                        Toast.makeText(this, getString(R.string.toast_reopened), Toast.LENGTH_SHORT).show()
+                        recreate()
+                    } else Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(getString(R.string.action_cancel), null)
+            .show()
+    }
+
+    private fun askDeleteReason() {
+        val input = EditText(this).apply { hint = getString(R.string.delete_reason_hint); maxLines = 3 }
+        val pad = (16 * resources.displayMetrics.density).toInt()
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.delete_reason_title))
+            .setView(LinearLayout(this).apply { setPadding(pad, pad / 2, pad, 0); addView(input, LinearLayout.LayoutParams(-1, -2)) })
+            .setPositiveButton(getString(R.string.delete_ticket)) { _, _ ->
+                val reason = input.text.toString().trim()
+                if (reason.isEmpty()) {
+                    Toast.makeText(this, getString(R.string.toast_fill_all_fields), Toast.LENGTH_SHORT).show(); return@setPositiveButton
+                }
+                ApiClient.callAsync(this, "ticket_delete", JSONObject().put("id", ticketId).put("reason", reason)) { r ->
+                    if (r.ok) {
+                        Toast.makeText(this, getString(R.string.toast_ticket_deleted), Toast.LENGTH_LONG).show()
+                        finish()
+                    } else Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(getString(R.string.action_cancel), null)
+            .show()
     }
 
     private fun loadHistory() {

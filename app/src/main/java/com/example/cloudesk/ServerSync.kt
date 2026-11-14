@@ -112,7 +112,9 @@ object ServerSync {
             attachmentName = attachmentName,
             resolvedAt = o.str("resolvedAt"),
             rating = if (o.isNull("rating")) null else o.getInt("rating"),
-            ratingComment = o.str("ratingComment")
+            ratingComment = o.str("ratingComment"),
+            reopenCount = o.optInt("reopenCount", 0),
+            confirmedAt = o.str("confirmedAt")
         )
     }
 

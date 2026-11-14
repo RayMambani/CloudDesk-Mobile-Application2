@@ -18,5 +18,7 @@ data class TicketEntity(
     val attachmentName: String? = null,
     val resolvedAt: String? = null,
     val rating: Int? = null,            // 1..5, given by the ticket owner after resolution
-    val ratingComment: String? = null
+    val ratingComment: String? = null,
+    val reopenCount: Int = 0,          // how many times the owner said "not fixed"
+    val confirmedAt: String? = null    // set when the owner confirmed the fix
 )

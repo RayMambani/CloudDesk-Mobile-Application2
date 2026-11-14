@@ -7,10 +7,17 @@ import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.widget.EditText
+import android.widget.ArrayAdapter
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.Toast
+import android.view.ViewGroup
+import org.json.JSONArray
+import org.json.JSONObject
 import android.widget.PopupMenu
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,11 +31,20 @@ class MainActivity : BaseActivity() {
     // Active filters (canonical English keys; null = "All")
     private var statusFilter: String? = null
     private var priorityFilter: String? = null
+    private var categoryFilter: String? = null
+    private var shownTickets: List<TicketEntity> = emptyList()
     private var searchQuery: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // An admin-created account must pick its own password before using the app.
+        if (SessionManager.mustChangePassword(this)) {
+            startActivity(Intent(this, ChangePasswordActivity::class.java))
+            finish()
+            return
+        }
 
         val welcomeTextView = findViewById<TextView>(R.id.welcomeText)
         val subtitleTextView = findViewById<TextView>(R.id.subtitleText)
@@ -106,6 +122,23 @@ class MainActivity : BaseActivity() {
         TicketVocabulary.PRIORITY_KEYS.forEach { key ->
             addChip(priorityGroup, TicketVocabulary.priorityDisplay(this, key), key, false) { priorityFilter = it; loadTickets(userRole) }
         }
+
+        // Staff: filter by category (network, hardware, ...) so they can resolve a whole group at once.
+        if (userRole == "admin" || userRole == "technician") {
+            val priorityRow = priorityGroup.parent as View
+            val host = priorityRow.parent as ViewGroup
+            val categoryGroup = ChipGroup(this).apply {
+                isSingleLine = true; isSingleSelection = true; isSelectionRequired = true
+            }
+            host.addView(HorizontalScrollView(this).apply {
+                isHorizontalScrollBarEnabled = false
+                addView(categoryGroup)
+            }, host.indexOfChild(priorityRow) + 1)
+            addChip(categoryGroup, getString(R.string.filter_all_categories), null, true) { categoryFilter = it; loadTickets(userRole) }
+            TicketVocabulary.CATEGORY_KEYS.forEach { key ->
+                addChip(categoryGroup, TicketVocabulary.categoryDisplay(this, key), key, false) { categoryFilter = it; loadTickets(userRole) }
+            }
+        }
     }
 
     private fun addChip(group: ChipGroup, label: String, key: String?, checked: Boolean, onSelected: (String?) -> Unit) {
@@ -151,6 +184,10 @@ class MainActivity : BaseActivity() {
         popup.menuInflater.inflate(R.menu.menu_profile, popup.menu)
         popup.menu.findItem(R.id.menu_performance).isVisible = (userRole == "admin")
         popup.menu.findItem(R.id.menu_users).isVisible = (userRole == "admin")
+        popup.menu.findItem(R.id.menu_bulk).isVisible = (userRole == "admin" || userRole == "technician")
+        popup.menu.findItem(R.id.menu_autoassign).isVisible = (userRole == "admin")
+        popup.menu.findItem(R.id.menu_deleted).isVisible = (userRole == "admin")
+        popup.menu.findItem(R.id.menu_audit).isVisible = (userRole == "admin")
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.menu_analytics -> {
@@ -185,6 +222,14 @@ class MainActivity : BaseActivity() {
                     i.putExtra("USER_ROLE", userRole)
                     startActivity(i)
                     true
+                }
+                R.id.menu_bulk -> { showBulkDialog(); true }
+                R.id.menu_autoassign -> { autoAssign(); true }
+                R.id.menu_deleted -> {
+                    startActivity(Intent(this, AdminLogActivity::class.java).putExtra("MODE", "deleted")); true
+                }
+                R.id.menu_audit -> {
+                    startActivity(Intent(this, AdminLogActivity::class.java).putExtra("MODE", "audit")); true
                 }
                 R.id.menu_settings -> {
                     val i = Intent(this, SettingsActivity::class.java)
@@ -293,16 +338,69 @@ class MainActivity : BaseActivity() {
         val query = searchQuery.lowercase()
         val displayTickets = visibleTickets.filter { t ->
             (statusFilter == null || t.status == statusFilter) &&
-                    (priorityFilter == null || t.priority == priorityFilter) &&
-                    (query.isEmpty() ||
-                            t.title.lowercase().contains(query) ||
-                            t.description.lowercase().contains(query) ||
-                            t.id.lowercase().contains(query) ||
-                            (t.assignedTo ?: "").lowercase().contains(query) ||
-                            TicketVocabulary.categoryDisplay(this, t.category).lowercase().contains(query))
+                (priorityFilter == null || t.priority == priorityFilter) &&
+                (categoryFilter == null || t.category == categoryFilter) &&
+                (query.isEmpty() ||
+                    t.title.lowercase().contains(query) ||
+                    t.description.lowercase().contains(query) ||
+                    t.id.lowercase().contains(query) ||
+                    (t.assignedTo ?: "").lowercase().contains(query) ||
+                    TicketVocabulary.categoryDisplay(this, t.category).lowercase().contains(query))
         }
 
+        shownTickets = displayTickets
         val recyclerView = findViewById<RecyclerView>(R.id.ticketsRecyclerView)
         recyclerView.adapter = TicketAdapter(displayTickets, userId, userRole, myName)
+    }
+
+    /** Admin: hand every unassigned open ticket to the technician with the fewest open tickets. */
+    private fun autoAssign() {
+        ApiClient.callAsync(this, "ticket_auto_assign") { r ->
+            if (r.ok) {
+                Toast.makeText(this, getString(R.string.toast_autoassign_format, r.json?.optInt("assigned", 0) ?: 0), Toast.LENGTH_LONG).show()
+                loadTickets(intent.getStringExtra("USER_ROLE") ?: "user")
+            } else Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Staff: update every ticket currently shown (respecting the category / status / search filters)
+     * in one go, with one message that each ticket owner receives.
+     */
+    private fun showBulkDialog() {
+        val statusKeys = listOf("resolved", "closed", "progress")
+        val targets = shownTickets
+        val pad = (16 * resources.displayMetrics.density).toInt()
+        val form = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(pad, pad / 2, pad, 0) }
+        val spinner = Spinner(this).apply {
+            adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_dropdown_item,
+                statusKeys.map { TicketVocabulary.statusDisplay(this@MainActivity, it) })
+        }
+        val note = EditText(this).apply { hint = getString(R.string.bulk_note_hint); maxLines = 4 }
+        form.addView(spinner); form.addView(note)
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.bulk_title_format, targets.size))
+            .setView(form)
+            .setPositiveButton(getString(R.string.bulk_apply)) { _, _ ->
+                val status = statusKeys[spinner.selectedItemPosition]
+                val text = note.text.toString().trim()
+                val ids = targets.filter { (it.status == "open" || it.status == "progress") && it.status != status }.map { it.id }
+                when {
+                    text.isEmpty() -> Toast.makeText(this, getString(R.string.toast_fill_all_fields), Toast.LENGTH_SHORT).show()
+                    ids.isEmpty() -> Toast.makeText(this, getString(R.string.toast_bulk_none), Toast.LENGTH_LONG).show()
+                    else -> {
+                        val body = JSONObject().put("ids", JSONArray(ids)).put("status", status).put("note", text)
+                        ApiClient.callAsync(this, "ticket_bulk_update", body) { r ->
+                            if (r.ok) {
+                                Toast.makeText(this, getString(R.string.toast_bulk_done_format, r.json?.optInt("updated", 0) ?: 0), Toast.LENGTH_LONG).show()
+                                loadTickets(intent.getStringExtra("USER_ROLE") ?: "user")
+                            } else Toast.makeText(this, ApiClient.errorText(this, r), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton(getString(R.string.action_cancel), null)
+            .show()
     }
 }

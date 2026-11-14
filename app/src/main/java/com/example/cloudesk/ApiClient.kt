@@ -139,6 +139,7 @@ object ApiClient {
             r.error == "attachment_type_not_allowed" -> R.string.toast_attachment_type_not_allowed
             r.error == "cannot_change_self" -> R.string.toast_cant_change_self
             r.error == "forbidden" -> R.string.toast_admin_only
+            r.error == "bad_state" -> R.string.toast_bad_state
             else -> R.string.toast_something_went_wrong
         }
     )

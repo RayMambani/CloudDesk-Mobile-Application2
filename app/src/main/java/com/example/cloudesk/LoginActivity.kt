@@ -118,7 +118,10 @@ class LoginActivity : BaseActivity() {
 
         Toast.makeText(this, getString(R.string.toast_signed_in_as, user.email), Toast.LENGTH_SHORT).show()
         SessionManager.saveSession(this, user.id, "${user.firstName} ${user.lastName}", user.role, user.email)
-        val intent = Intent(this, MainActivity::class.java)
+        // An administrator created this account (or reset it): choose a personal password first.
+        val mustChange = json.optBoolean("mustChangePassword", false)
+        SessionManager.setMustChangePassword(this, mustChange)
+        val intent = Intent(this, if (mustChange) ChangePasswordActivity::class.java else MainActivity::class.java)
         intent.putExtra("USER_ID", user.id)
         intent.putExtra("USER_NAME", "${user.firstName} ${user.lastName}")
         intent.putExtra("USER_ROLE", user.role)

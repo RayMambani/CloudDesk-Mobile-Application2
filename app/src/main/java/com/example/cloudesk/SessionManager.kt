@@ -15,6 +15,7 @@ object SessionManager {
     private const val KEY_USER_ROLE = "user_role"
     private const val KEY_USER_EMAIL = "user_email"
     private const val KEY_TOKEN = "api_token"
+    private const val KEY_MUST_CHANGE = "must_change_password"
 
     private fun prefs(context: Context): SharedPreferences =
         context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -44,6 +45,13 @@ object SessionManager {
     }
 
     fun getToken(context: Context): String? = prefs(context).getString(KEY_TOKEN, null)
+
+    /** True while the account still has an admin-issued temporary password. */
+    fun setMustChangePassword(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean(KEY_MUST_CHANGE, value).apply()
+    }
+
+    fun mustChangePassword(context: Context): Boolean = prefs(context).getBoolean(KEY_MUST_CHANGE, false)
 
     /** Clears the active session. Used by both Logout and Switch User. */
     fun clearSession(context: Context) {
