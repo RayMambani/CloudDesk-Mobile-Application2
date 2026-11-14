@@ -1,5 +1,11 @@
 # CloudDesk — IT Helpdesk Ticketing App (Android)
 
+## Download the Android app
+[Download CloudDesk.apk](https://github.com/RayMambani/CloudDesk-Mobile-Application2/releases/latest)
+
+Install: open the file on your phone and allow installing from this source if Android asks.
+
+
 CloudDesk is an IT helpdesk app. Employees log tickets when they have a technical problem
 (broken laptop, network fault, locked account). Technicians and admins pick the tickets up,
 set the priority, reply, and track each one to resolution against a deadline (SLA).
