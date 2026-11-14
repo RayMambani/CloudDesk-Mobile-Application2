@@ -16,10 +16,10 @@
 
 </div>
 
-> **WIL XISD6329 – Task 2.** This repository holds the CloudDesk **Android app** (Kotlin). The website, API and database
+> This repository holds the CloudDesk **Android app** (Kotlin). The website, API and database
 > are in the [web repository](https://github.com/RayMambani/CloudDesk-Web-Application), described in its README. This
 > report covers both.
-> Student: **[your name and student number]** · GitHub: [@RayMambani](https://github.com/RayMambani)
+> Owner: **[Makhadzi Rachel Mambani]** · GitHub: [@RayMambani](https://github.com/RayMambani)
 
 ---
 
