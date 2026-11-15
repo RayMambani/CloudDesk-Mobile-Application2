@@ -31,6 +31,16 @@ object ServerSync {
         val token = SessionManager.getToken(context)
 
         val users = json.optJSONArray("users").mapObjects { parseUser(it) }
+        // Keep the notification switches in step with what the server really uses to send email/SMS.
+        val me = SessionManager.getUserId(context)
+        json.optJSONArray("users").mapObjects { it }.firstOrNull { it.optInt("id") == me }?.let { o ->
+            if (o.has("emailNotifications") && o.has("smsNotifications")) {
+                context.getSharedPreferences(SettingsActivity.PREFS_NOTIF, Context.MODE_PRIVATE).edit()
+                    .putBoolean(SettingsActivity.KEY_EMAIL_NOTIF, o.getBoolean("emailNotifications"))
+                    .putBoolean(SettingsActivity.KEY_SMS_NOTIF, o.getBoolean("smsNotifications"))
+                    .apply()
+            }
+        }
         val tickets = json.optJSONArray("tickets").mapObjects { parseTicket(it, localAttachments, token) }
         val comments = json.optJSONArray("comments").mapObjects { parseComment(it) }
         val history = json.optJSONArray("history").mapObjects { parseHistory(it) }

@@ -157,6 +157,8 @@ class SettingsActivity : BaseActivity() {
                 .put("firstName", firstName)
                 .put("lastName", lastName)
                 .put("phone", phone)
+                .put("emailNotifications", emailSwitch.isChecked)
+                .put("smsNotifications", smsSwitch.isChecked)
             if (changingPassword) body.put("currentPassword", currentPassword).put("newPassword", newPassword)
 
             saveButton.isEnabled = false
