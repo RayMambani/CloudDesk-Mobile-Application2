@@ -12,14 +12,14 @@
 **[🌐 Live website](https://clouddesk-web-application.onrender.com)** ·
 **[📂 Website and API source](https://github.com/RayMambani/CloudDesk-Web-Application)**
 
-<img src="docs/screenshots/app-user-dashboard.png" alt="CloudDesk app dashboard" width="280">
+<img src="docs/screenshots/app-dashboard.png" alt="CloudDesk app dashboard" width="280">
 
 </div>
 
-> This repository holds the CloudDesk **Android app** (Kotlin). The website, API and database
+> **WIL XISD6329 – Task 2.** This repository holds the CloudDesk **Android app** (Kotlin). The website, API and database
 > are in the [web repository](https://github.com/RayMambani/CloudDesk-Web-Application), described in its README. This
 > report covers both.
-> Owner: **[Makhadzi Rachel Mambani]** · GitHub: [@RayMambani](https://github.com/RayMambani)
+> Student: **[your name and student number]** · GitHub: [@RayMambani](https://github.com/RayMambani)
 
 ---
 
@@ -71,20 +71,6 @@ online database with the CloudDesk website, so a ticket created on the phone app
 
 | Sign in | Dashboard | Ticket detail |
 |---|---|---|
-| <img src="docs/screenshots/app-login.png" width="220"> | <img src="docs/screenshots/app-user-dashboard.png" width="220"> | <img src="docs/screenshots/app-ticket-detail.png" width="220"> |
-
-| Confirm or reopen | Admin menu | Audit log |
-|---|---|---|
-| <img src="docs/screenshots/app-confirm.png" width="220"> | <img src="docs/screenshots/app-admin-menu.png" width="220"> | <img src="docs/screenshots/app-audit.png" width="220"> |
-
-### 👉 [See every screen of the app](docs/APP_SCREENS.md)
-
-All 31 screens with a short explanation of each: sign-up and verification, password reset, forced password change, the user,
-technician and admin dashboards, ticket detail, confirm and reopen, rating, chat, analytics, settings, user management,
-performance report, deleted tickets, audit log, and the languages and themes. The website screens, including the graphs, are in the
-[web repository](https://github.com/RayMambani/CloudDesk-Web-Application/blob/main/docs/SCREENS.md).
-
----|---|---|
 | <img src="docs/screenshots/app-login.png" width="220"> | <img src="docs/screenshots/app-dashboard.png" width="220"> | <img src="docs/screenshots/app-ticket.png" width="220"> |
 
 | Confirm or reopen | Admin menu | Audit log |
