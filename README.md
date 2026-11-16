@@ -243,5 +243,8 @@ tooltips on every icon, and GitHub Actions with a downloadable APK.
 - Sepedi, Tshivenda and Xitsonga text for the newest screens still shows English.
 - Gemini chat calls Google directly with a key inside the APK; routing it through the server would be safer.
 - Push notifications, and an end-to-end UI test of the app.
+
+## 11. YouTube Video Link
+https://youtu.be/Rv7v0HdGzBA?si=So7eviSEznLjZTin
 - The APK is a debug build, not published on Google Play.
 - The free web hosting sleeps when idle, so the first request after a pause is slow.
